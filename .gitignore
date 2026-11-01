@@ -1,3 +1,24 @@
+# Dependencies
+node_modules
+
+# Build output and caches
+dist
+dist-ssr
+*.tsbuildinfo
+.vite
+.eslintcache
+coverage
+
+# Environment variables (may contain private URLs or keys)
+.env
+.env.*
+!.env.example
+*.local
+
+# Deploy CLI folders (contain account / project ids)
+.vercel
+.netlify
+
 # Logs
 logs
 *.log
@@ -5,20 +26,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor and OS files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local tool settings
+.claude/
+.cursor/
+
+# Personal notes, drafts, local experiments — never committed
+_private/
