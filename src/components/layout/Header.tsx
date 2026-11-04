@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/hooks/useToast";
 import { cn } from "@/utils/cn";
 
 // NavLink passes { isActive } — the current page's link gets the "active" look
@@ -23,7 +25,10 @@ function CartBadge({ count }: { count: number }) {
 }
 
 export function Header() {
+  const { isLoggedIn, displayName, logout } = useAuth();
   const { totals } = useCart();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -31,6 +36,12 @@ export function Header() {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
+
+  function handleLogout() {
+    logout(); // the cart stays as it is
+    showToast("You're logged out", "info");
+    navigate("/");
+  }
 
   const cartLabel = `Cart, ${totals.itemCount} ${totals.itemCount === 1 ? "item" : "items"}`;
 
@@ -47,6 +58,25 @@ export function Header() {
     </>
   );
 
+  const accountLinks = isLoggedIn ? (
+    <>
+      <span className="inline-flex h-11 max-w-40 items-center truncate px-3 text-sm font-semibold">
+        {displayName}
+      </span>
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="focus-ring inline-flex h-11 items-center rounded-lg px-3 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white"
+      >
+        Log out
+      </button>
+    </>
+  ) : (
+    <NavLink to="/login" className={navLinkClass}>
+      Log in
+    </NavLink>
+  );
+
   return (
     <header className="sticky top-0 z-40 border-b border-ink-200 bg-white/90 backdrop-blur dark:border-ink-800 dark:bg-ink-950/90">
       <div className="page-container flex h-16 items-center gap-2">
@@ -61,6 +91,9 @@ export function Header() {
         <nav aria-label="Main" className="hidden flex-1 items-center gap-1 md:flex">
           {links}
         </nav>
+        <div className="hidden items-center gap-1 md:flex">
+          {accountLinks}
+        </div>
 
         {/* Mobile: cart stays visible, everything else goes into the burger menu */}
         <div className="ml-auto flex items-center gap-1 md:hidden">
@@ -93,6 +126,8 @@ export function Header() {
         >
           <div className="page-container flex flex-col gap-1 pt-2">
             {links}
+            <div className="my-1 border-t border-ink-100 dark:border-ink-800" />
+            {accountLinks}
           </div>
         </nav>
       )}

@@ -1,16 +1,22 @@
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthProvider";
 import { CartProvider } from "@/context/CartProvider";
 import { ToastProvider } from "@/context/ToastProvider";
 import { AppRoutes } from "@/routes/AppRoutes";
 
-/** Providers wrap the routes, so every page can read the shared cart and show toasts. */
+/**
+ * App = providers + routes. Order matters: CartProvider and the pages use toasts,
+ * so ToastProvider wraps them; everything that navigates lives inside BrowserRouter.
+ */
 export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-        <CartProvider>
-          <AppRoutes />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <AppRoutes />
+          </CartProvider>
+        </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
   );
