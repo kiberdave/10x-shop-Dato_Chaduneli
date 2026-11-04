@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { productsEndpoints } from "@/api/products.api";
+import { CatalogToolbar } from "@/components/catalog/CatalogToolbar";
 import { Pagination } from "@/components/catalog/Pagination";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
@@ -10,8 +11,8 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useFetch } from "@/hooks/useFetch";
-import type { AsyncState } from "@/types/api";
-import type { Product, ProductsResponse } from "@/types/product";
+import type { AsyncState, SortOption } from "@/types/api";
+import type { Category, Product, ProductsResponse } from "@/types/product";
 import { PRODUCTS_PER_PAGE } from "@/utils/constants";
 import { pluralize } from "@/utils/format";
 import { readCatalogParams } from "@/utils/url";
@@ -28,6 +29,7 @@ export default function CatalogPage() {
 
   // The path string is the effect dependency inside useFetch: new filters -> new request
   const { state, reload } = useFetch<ProductsResponse>(productsEndpoints.list(params));
+  const { state: categoriesState } = useFetch<Category[]>(productsEndpoints.categories());
 
   const addToCart = useAddToCart();
   // Stable callback (useCallback) so React.memo(ProductCard) can skip re-renders
@@ -51,6 +53,19 @@ export default function CatalogPage() {
     [setSearchParams],
   );
 
+  // Search and category are mutually exclusive (DummyJSON limitation); changing a filter -> page 1
+  const handleSearch = useCallback(
+    (q: string) => updateParams({ q: q || null, category: null, page: null }, { replace: true }),
+    [updateParams],
+  );
+  const handleCategoryChange = useCallback(
+    (slug: string) => updateParams({ category: slug || null, q: null, page: null }),
+    [updateParams],
+  );
+  const handleSortChange = useCallback(
+    (sort: SortOption) => updateParams({ sort: sort || null, page: null }),
+    [updateParams],
+  );
   function handlePageChange(page: number) {
     updateParams({ page: page === 1 ? null : String(page) });
     window.scrollTo(0, 0);
@@ -58,6 +73,8 @@ export default function CatalogPage() {
   function clearFilters() {
     setSearchParams({});
   }
+
+  const categories = categoriesState.status === "success" ? categoriesState.data : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,6 +86,16 @@ export default function CatalogPage() {
           </p>
         )}
       </div>
+
+      <CatalogToolbar
+        q={params.q}
+        category={params.category}
+        sort={params.sort}
+        categories={categories}
+        onSearch={handleSearch}
+        onCategoryChange={handleCategoryChange}
+        onSortChange={handleSortChange}
+      />
 
       <CatalogResults
         state={state}
