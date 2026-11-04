@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useCart } from "@/hooks/useCart";
 import { cn } from "@/utils/cn";
 
 // NavLink passes { isActive } — the current page's link gets the "active" look
@@ -12,7 +13,17 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
   );
 }
 
+function CartBadge({ count }: { count: number }) {
+  if (count <= 0) return null; // 0 items -> no badge at all
+  return (
+    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-tag px-1 text-xs font-bold text-tag-ink tabular-nums">
+      {count}
+    </span>
+  );
+}
+
 export function Header() {
+  const { totals } = useCart();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -21,14 +32,17 @@ export function Header() {
     setIsMenuOpen(false);
   }, [pathname]);
 
+  const cartLabel = `Cart, ${totals.itemCount} ${totals.itemCount === 1 ? "item" : "items"}`;
+
   // The same links are rendered in the desktop bar and in the mobile panel
   const links = (
     <>
       <NavLink to="/" end className={navLinkClass}>
         Catalog
       </NavLink>
-      <NavLink to="/cart" className={navLinkClass}>
+      <NavLink to="/cart" className={navLinkClass} aria-label={cartLabel}>
         Cart
+        <CartBadge count={totals.itemCount} />
       </NavLink>
     </>
   );
@@ -48,8 +62,14 @@ export function Header() {
           {links}
         </nav>
 
-        {/* Mobile: links go into the burger menu */}
+        {/* Mobile: cart stays visible, everything else goes into the burger menu */}
         <div className="ml-auto flex items-center gap-1 md:hidden">
+          <NavLink to="/cart" className={navLinkClass} aria-label={cartLabel}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 6h15l-1.5 9h-12z M6 6 5 3H2 M9 20h.01 M18 20h.01" />
+            </svg>
+            <CartBadge count={totals.itemCount} />
+          </NavLink>
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
@@ -71,7 +91,9 @@ export function Header() {
           aria-label="Mobile"
           className="border-t border-ink-200 bg-white pb-3 md:hidden dark:border-ink-800 dark:bg-ink-950"
         >
-          <div className="page-container flex flex-col gap-1 pt-2">{links}</div>
+          <div className="page-container flex flex-col gap-1 pt-2">
+            {links}
+          </div>
         </nav>
       )}
     </header>
