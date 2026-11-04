@@ -1,18 +1,27 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { StockBadge } from "@/components/ui/StockBadge";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import type { Product } from "@/types/product";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useToast } from "@/hooks/useToast";
+import { reviewsStorage } from "@/models/StorageService";
+import type { Product, Review, ReviewsByProduct } from "@/types/product";
 import { SHIPPING } from "@/utils/constants";
 import { formatCategory, formatPrice, formatRating, pluralize } from "@/utils/format";
+import type { ReviewFormValues } from "@/utils/validation";
 import { ProductGallery } from "./ProductGallery";
 import { ProductTabs } from "./ProductTabs";
+import { ReviewForm } from "./ReviewForm";
 import { ReviewList } from "./ReviewList";
+
+const NO_REVIEWS: Review[] = [];
+const EMPTY_REVIEWS_MAP: ReviewsByProduct = {};
 
 interface ProductDetailsProps {
   product: Product;
@@ -23,14 +32,27 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoggedIn, displayName } = useAuth();
   const { items } = useCart();
   const addToCart = useAddToCart();
+  const { showToast } = useToast();
 
   const [quantity, setQuantity] = useState(1);
+  const [reviewsMap, setReviewsMap] = useLocalStorage(reviewsStorage, EMPTY_REVIEWS_MAP);
 
   const isOutOfStock = product.stock <= 0;
   const inCart = items.find((item) => item.productId === product.id)?.quantity ?? 0;
   const images = product.images.length > 0 ? product.images : [product.thumbnail];
+
+  // Local reviews first (newest on top), then the ones from the API
+  const localReviews = reviewsMap[String(product.id)] ?? NO_REVIEWS;
+  const reviews = useMemo(() => [...localReviews, ...product.reviews], [localReviews, product.reviews]);
+
+  // Recalculated only when the review list changes, not on every quantity click
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return product.rating;
+    return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  }, [reviews, product.rating]);
 
   function handleBack() {
     // Came from inside the app -> real "back" (the catalog filters are kept in the URL).
@@ -43,6 +65,21 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const added = addToCart(product, quantity);
     if (added) setQuantity(1);
   }
+
+  const handleReviewSubmit = useCallback(
+    (values: ReviewFormValues) => {
+      const review: Review = {
+        rating: values.rating,
+        comment: values.comment,
+        date: new Date().toISOString(),
+        reviewerName: isLoggedIn ? displayName : "Guest",
+      };
+      // Immutable update: a new object with a new array for this product
+      setReviewsMap({ ...reviewsMap, [String(product.id)]: [review, ...localReviews] });
+      showToast("Review added ✓");
+    },
+    [isLoggedIn, displayName, reviewsMap, setReviewsMap, product.id, localReviews, showToast],
+  );
 
   return (
     <div>
@@ -69,8 +106,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               <span aria-hidden="true" className="text-low">
                 ★
               </span>{" "}
-              <span className="font-semibold">{formatRating(product.rating)}</span>
-              <span className="text-ink-500 dark:text-ink-400"> · {pluralize(product.reviews.length, "review")}</span>
+              <span className="font-semibold">{formatRating(averageRating)}</span>
+              <span className="text-ink-500 dark:text-ink-400"> · {pluralize(reviews.length, "review")}</span>
             </p>
           </div>
 
@@ -134,8 +171,13 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             },
             {
               id: "reviews",
-              label: `Reviews (${product.reviews.length})`,
-              content: <ReviewList reviews={product.reviews} />,
+              label: `Reviews (${reviews.length})`,
+              content: (
+                <div className="flex flex-col gap-6">
+                  <ReviewForm onSubmit={handleReviewSubmit} />
+                  <ReviewList reviews={reviews} />
+                </div>
+              ),
             },
           ]}
         />
