@@ -1,49 +1,131 @@
 import { useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { productsEndpoints } from "@/api/products.api";
+import { Pagination } from "@/components/catalog/Pagination";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useFetch } from "@/hooks/useFetch";
-import type { CatalogParams } from "@/types/api";
+import type { AsyncState } from "@/types/api";
 import type { Product, ProductsResponse } from "@/types/product";
+import { PRODUCTS_PER_PAGE } from "@/utils/constants";
 import { pluralize } from "@/utils/format";
+import { readCatalogParams } from "@/utils/url";
 
-// First version: always the first 12 products, no filters yet
-const FIRST_PAGE: CatalogParams = { q: "", category: "", sort: "", page: 1 };
+type ParamChanges = Partial<Record<"q" | "category" | "sort" | "page", string | null>>;
 
 export default function CatalogPage() {
   useDocumentTitle("Catalog");
 
-  const { state, reload } = useFetch<ProductsResponse>(productsEndpoints.list(FIRST_PAGE));
+  // q, category, sort and page live in the URL, not in useState:
+  // refresh, Back/Forward and sharing a link all keep the same view.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = readCatalogParams(searchParams);
+
+  // The path string is the effect dependency inside useFetch: new filters -> new request
+  const { state, reload } = useFetch<ProductsResponse>(productsEndpoints.list(params));
+
   const addToCart = useAddToCart();
   // Stable callback (useCallback) so React.memo(ProductCard) can skip re-renders
   const handleAdd = useCallback((product: Product) => addToCart(product, 1), [addToCart]);
+
+  // One helper for all URL updates; null removes a parameter
+  const updateParams = useCallback(
+    (changes: ParamChanges, options?: { replace?: boolean }) => {
+      setSearchParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          for (const [key, value] of Object.entries(changes)) {
+            if (value) next.set(key, value);
+            else next.delete(key);
+          }
+          return next;
+        },
+        { replace: options?.replace ?? false },
+      );
+    },
+    [setSearchParams],
+  );
+
+  function handlePageChange(page: number) {
+    updateParams({ page: page === 1 ? null : String(page) });
+    window.scrollTo(0, 0);
+  }
+  function clearFilters() {
+    setSearchParams({});
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h1 className="text-3xl md:text-4xl">Catalog</h1>
         {state.status === "success" && (
-          <p className="text-sm text-ink-500 dark:text-ink-400">{pluralize(state.data.total, "product")}</p>
+          <p className="text-sm text-ink-500 dark:text-ink-400">
+            {params.q ? `${pluralize(state.data.total, "result")} for “${params.q}”` : pluralize(state.data.total, "product")}
+          </p>
         )}
       </div>
 
-      {/* Loading -> Error -> Empty -> Success */}
-      {(state.status === "idle" || state.status === "loading") && <ProductGridSkeleton />}
-
-      {state.status === "error" && (
-        <ErrorMessage title="Couldn't load products" message={state.message} onRetry={reload} />
-      )}
-
-      {state.status === "success" &&
-        (state.data.products.length === 0 ? (
-          <EmptyState title="No products found." />
-        ) : (
-          <ProductGrid products={state.data.products} onAdd={handleAdd} />
-        ))}
+      <CatalogResults
+        state={state}
+        page={params.page}
+        onRetry={reload}
+        onAdd={handleAdd}
+        onPageChange={handlePageChange}
+        onClearFilters={clearFilters}
+      />
     </div>
+  );
+}
+
+interface CatalogResultsProps {
+  state: AsyncState<ProductsResponse>;
+  page: number;
+  onRetry: () => void;
+  onAdd: (product: Product) => void;
+  onPageChange: (page: number) => void;
+  onClearFilters: () => void;
+}
+
+// Loading -> Error -> Empty -> Success, in this order (early returns)
+function CatalogResults({ state, page, onRetry, onAdd, onPageChange, onClearFilters }: CatalogResultsProps) {
+  if (state.status === "idle" || state.status === "loading") {
+    return <ProductGridSkeleton />;
+  }
+
+  if (state.status === "error") {
+    return <ErrorMessage title="Couldn't load products" message={state.message} onRetry={onRetry} />;
+  }
+
+  const { products, total, skip } = state.data;
+
+  if (products.length === 0) {
+    return (
+      <EmptyState title="No products found." description="Try another search word or category.">
+        <Button variant="secondary" onClick={onClearFilters}>
+          Clear filters
+        </Button>
+      </EmptyState>
+    );
+  }
+
+  const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE);
+  const from = skip + 1;
+  const to = skip + products.length;
+
+  return (
+    <>
+      <ProductGrid products={products} onAdd={onAdd} />
+      <div className="flex flex-col items-center gap-3 pt-2">
+        <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
+        <p className="text-sm text-ink-500 dark:text-ink-400">
+          Showing {from}–{to} of {total}
+        </p>
+      </div>
+    </>
   );
 }
