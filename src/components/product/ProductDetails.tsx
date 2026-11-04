@@ -11,6 +11,8 @@ import type { Product } from "@/types/product";
 import { SHIPPING } from "@/utils/constants";
 import { formatCategory, formatPrice, formatRating, pluralize } from "@/utils/format";
 import { ProductGallery } from "./ProductGallery";
+import { ProductTabs } from "./ProductTabs";
+import { ReviewList } from "./ReviewList";
 
 interface ProductDetailsProps {
   product: Product;
@@ -105,6 +107,40 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           </p>
         </div>
       </div>
+
+      <div className="mt-12 max-w-3xl">
+        <ProductTabs
+          tabs={[
+            {
+              id: "description",
+              label: "Description",
+              content: (
+                <div className="flex flex-col gap-4">
+                  <p className="leading-relaxed text-ink-700 dark:text-ink-200">{product.description}</p>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                    {product.brand && (
+                      <>
+                        <dt className="text-ink-500 dark:text-ink-400">Brand</dt>
+                        <dd>{product.brand}</dd>
+                      </>
+                    )}
+                    <dt className="text-ink-500 dark:text-ink-400">Category</dt>
+                    <dd className="capitalize">{formatCategory(product.category)}</dd>
+                    <dt className="text-ink-500 dark:text-ink-400">Available</dt>
+                    <dd>{pluralize(product.stock, "unit")}</dd>
+                  </dl>
+                </div>
+              ),
+            },
+            {
+              id: "reviews",
+              label: `Reviews (${product.reviews.length})`,
+              content: <ReviewList reviews={product.reviews} />,
+            },
+          ]}
+        />
+      </div>
+
     </div>
   );
 }
