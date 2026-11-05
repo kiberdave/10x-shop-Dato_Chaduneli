@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/utils/cn";
+import { ThemeToggle } from "./ThemeToggle";
 
 // NavLink passes { isActive } — the current page's link gets the "active" look
 function navLinkClass({ isActive }: { isActive: boolean }): string {
@@ -97,6 +98,7 @@ export function Header() {
           {links}
         </nav>
         <div className="hidden items-center gap-1 md:flex">
+          <ThemeToggle />
           {accountLinks}
         </div>
 
@@ -133,6 +135,7 @@ export function Header() {
             {links}
             <div className="my-1 border-t border-ink-100 dark:border-ink-800" />
             {accountLinks}
+            <ThemeToggle withLabel className="justify-start" />
           </div>
         </nav>
       )}
