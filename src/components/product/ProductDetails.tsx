@@ -17,6 +17,7 @@ import { formatCategory, formatPrice, formatRating, pluralize } from "@/utils/fo
 import type { ReviewFormValues } from "@/utils/validation";
 import { ProductGallery } from "./ProductGallery";
 import { ProductTabs } from "./ProductTabs";
+import { RelatedProducts } from "./RelatedProducts";
 import { ReviewForm } from "./ReviewForm";
 import { ReviewList } from "./ReviewList";
 
@@ -65,6 +66,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const added = addToCart(product, quantity);
     if (added) setQuantity(1);
   }
+
+  const handleRelatedAdd = useCallback((related: Product) => addToCart(related, 1), [addToCart]);
 
   const handleReviewSubmit = useCallback(
     (values: ReviewFormValues) => {
@@ -183,6 +186,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         />
       </div>
 
+      <RelatedProducts category={product.category} currentId={product.id} onAdd={handleRelatedAdd} />
     </div>
   );
 }
