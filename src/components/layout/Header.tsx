@@ -66,9 +66,9 @@ export function Header() {
 
   const accountLinks = isLoggedIn ? (
     <>
-      <span className="inline-flex h-11 max-w-40 items-center truncate px-3 text-sm font-semibold">
-        {displayName}
-      </span>
+      <NavLink to="/profile" className={navLinkClass}>
+        <span className="max-w-40 truncate">{displayName}</span>
+      </NavLink>
       <button
         type="button"
         onClick={handleLogout}

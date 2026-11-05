@@ -13,6 +13,7 @@ const CheckoutPage = lazy(() => import("@/pages/CheckoutPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
 const OrderDetailsPage = lazy(() => import("@/pages/OrderDetailsPage"));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 export function AppRoutes() {
@@ -45,6 +46,14 @@ export function AppRoutes() {
           element={
             <ProtectedRoute>
               <OrderDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
