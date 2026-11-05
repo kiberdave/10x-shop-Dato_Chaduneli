@@ -55,6 +55,11 @@ export function Header() {
         Cart
         <CartBadge count={totals.itemCount} />
       </NavLink>
+      {isLoggedIn && (
+        <NavLink to="/orders" className={navLinkClass}>
+          Orders
+        </NavLink>
+      )}
     </>
   );
 

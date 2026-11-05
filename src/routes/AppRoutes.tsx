@@ -11,6 +11,7 @@ const ProductPage = lazy(() => import("@/pages/ProductPage"));
 const CartPage = lazy(() => import("@/pages/CartPage"));
 const CheckoutPage = lazy(() => import("@/pages/CheckoutPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 export function AppRoutes() {
@@ -27,6 +28,14 @@ export function AppRoutes() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="orders"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
             </ProtectedRoute>
           }
         />
