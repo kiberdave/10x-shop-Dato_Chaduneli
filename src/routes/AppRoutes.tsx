@@ -7,6 +7,7 @@ import CatalogPage from "@/pages/CatalogPage";
 // downloaded only when the user opens that route (see the Network tab).
 // The catalog is the landing page, so it stays in the main bundle.
 const ProductPage = lazy(() => import("@/pages/ProductPage"));
+const CartPage = lazy(() => import("@/pages/CartPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
@@ -18,6 +19,7 @@ export function AppRoutes() {
         <Route index element={<CatalogPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="products/:id" element={<ProductPage />} />
+        <Route path="cart" element={<CartPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
