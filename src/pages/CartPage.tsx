@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartLine } from "@/components/cart/CartLine";
 import { CartSummary } from "@/components/cart/CartSummary";
+import { PromoCodeForm } from "@/components/cart/PromoCodeForm";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonStyles";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,7 +16,7 @@ import { readStateString } from "@/utils/guards";
 export default function CartPage() {
   useDocumentTitle("Cart");
 
-  const { items, promoCode, totals, setQuantity, removeItem, clearCart } = useCart();
+  const { items, promoCode, totals, setQuantity, removeItem, clearCart, applyPromo, removePromo } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,6 +35,12 @@ export default function CartPage() {
     if (window.confirm("Clear the cart? This cannot be undone.")) {
       clearCart();
     }
+  }
+
+  function handleApplyPromo(code: string): boolean {
+    const applied = applyPromo(code);
+    if (applied) showToast("Promo code applied ✓");
+    return applied;
   }
 
   if (items.length === 0) {
@@ -75,7 +82,8 @@ export default function CartPage() {
 
         {/* On mobile the summary simply follows the list (single column) */}
         <div className="lg:sticky lg:top-24">
-          <CartSummary totals={totals} promoCode={promoCode}>
+          <CartSummary totals={totals} promoCode={promoCode} onRemovePromo={removePromo}>
+            {!promoCode && <PromoCodeForm onApply={handleApplyPromo} />}
             {/* A guest is sent to /login by ProtectedRoute — no second check here */}
             <Button size="lg" className="w-full" onClick={() => navigate("/checkout")}>
               Proceed to checkout
