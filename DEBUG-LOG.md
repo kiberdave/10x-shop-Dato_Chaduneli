@@ -43,16 +43,12 @@ Format for every entry: symptom → reproduction → tool → root cause → fix
 - **Fix:** "Adjust GitHub App Permissions" → added the repository → Import → Deploy. No code change; deploy works with every push to `main`.
 - **Lesson:** deploy problems are not always in the code — check access and integrations first.
 
-<!--
-Template for the next entry:
+## 5. `robots.txt` returned the app's HTML
 
-## N. Short title
-
-- **Date:**
-- **Symptom:** what was visible
-- **Reproduction:** steps
-- **Tool:** Console / Network / Sources breakpoint / React DevTools (Components, Profiler) / tsc / ESLint — and what it showed
-- **Root cause:**
-- **Fix:** what changed + commit link
-- **Lesson:**
--->
+- **Date:** 6 Nov 2026
+- **Symptom:** Lighthouse SEO was 92 with the audit "robots.txt is not valid — 38 errors found". The "errors" were the lines of our own page: `<!doctype html>`, `<html lang="en">`, `<head>` …
+- **Reproduction:** deploy with the SPA rewrite in `vercel.json` (`"/(.*)" → "/index.html"`) and no `robots.txt` in `public/` → open `https://10x-shop-dato-chaduneli.vercel.app/robots.txt` → the store's `index.html` comes back with status 200.
+- **Tool:** Lighthouse (Mobile, SEO section — it lists every line it could not parse), then opening `/robots.txt` directly in the browser.
+- **Root cause:** the rewrite sends every path that is not a real file to `index.html`. There was no real `robots.txt`, so crawlers got HTML instead of rules.
+- **Fix:** added `public/robots.txt` (`User-agent: *` / `Allow: /`). Vite copies it to `dist/`, and Vercel serves real files before applying rewrites — [b4d8eb5](https://github.com/kiberdave/10x-shop-Dato_Chaduneli/commit/b4d8eb5).
+- **Lesson:** a catch-all rewrite also catches the files that crawlers and browsers ask for by convention (`robots.txt`, `favicon.ico`); they must exist as real files.
