@@ -85,6 +85,7 @@ export default function LoginPage() {
             id="username"
             name="username"
             label="Username"
+            placeholder="e.g. emilys"
             autoComplete="username"
             value={formik.values.username}
             onChange={formik.handleChange}
@@ -96,6 +97,7 @@ export default function LoginPage() {
             name="password"
             type="password"
             label="Password"
+            placeholder="6 or more characters"
             autoComplete="current-password"
             value={formik.values.password}
             onChange={formik.handleChange}

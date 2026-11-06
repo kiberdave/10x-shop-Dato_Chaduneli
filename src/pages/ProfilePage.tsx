@@ -83,6 +83,7 @@ export default function ProfilePage() {
             id="profile-firstName"
             name="firstName"
             label="First name"
+            placeholder="e.g. Nino"
             autoComplete="given-name"
             value={values.firstName}
             onChange={handleChange}
@@ -92,6 +93,7 @@ export default function ProfilePage() {
             id="profile-lastName"
             name="lastName"
             label="Last name"
+            placeholder="e.g. Beridze"
             autoComplete="family-name"
             value={values.lastName}
             onChange={handleChange}
@@ -102,6 +104,7 @@ export default function ProfilePage() {
             name="email"
             type="email"
             label="Email"
+            placeholder="e.g. nino@example.com"
             autoComplete="email"
             value={values.email}
             onChange={handleChange}
@@ -112,6 +115,7 @@ export default function ProfilePage() {
             name="phone"
             type="tel"
             label="Phone (optional)"
+            placeholder="+995 555 12 34 56"
             autoComplete="tel"
             value={values.phone}
             onChange={handleChange}

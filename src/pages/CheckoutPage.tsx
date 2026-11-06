@@ -10,6 +10,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { createOrder } from "@/models/order";
 import { ordersStorage } from "@/models/StorageService";
 import type { Order, ShippingInfo } from "@/types/order";
+import { SHIPPING } from "@/utils/constants";
 import { formatPrice } from "@/utils/format";
 import { hasErrors, validateShipping } from "@/utils/validation";
 
@@ -122,13 +123,20 @@ export default function CheckoutPage() {
           noValidate
           className="flex flex-col gap-5 rounded-2xl border border-ink-200 bg-white p-5 md:p-6 dark:border-ink-800 dark:bg-ink-900"
         >
-          <h2 className="text-lg">Shipping details</h2>
+          <div>
+            <h2 className="text-lg">Shipping details</h2>
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">
+              Delivery costs {formatPrice(SHIPPING.cost)}. Orders from {formatPrice(SHIPPING.freeFrom)} (after the promo
+              discount) ship free.
+            </p>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField
               id="checkout-fullName"
               name="fullName"
               label="Full name"
+              placeholder="e.g. Nino Beridze"
               autoComplete="name"
               value={values.fullName}
               onChange={handleChange}
@@ -141,6 +149,7 @@ export default function CheckoutPage() {
               name="email"
               type="email"
               label="Email"
+              placeholder="e.g. nino@example.com"
               autoComplete="email"
               value={values.email}
               onChange={handleChange}
@@ -152,6 +161,7 @@ export default function CheckoutPage() {
               id="checkout-address"
               name="address"
               label="Address"
+              placeholder="e.g. 12 Rustaveli Ave, apt 5"
               autoComplete="street-address"
               value={values.address}
               onChange={handleChange}
@@ -162,6 +172,7 @@ export default function CheckoutPage() {
               id="checkout-city"
               name="city"
               label="City"
+              placeholder="e.g. Tbilisi"
               autoComplete="address-level2"
               value={values.city}
               onChange={handleChange}
