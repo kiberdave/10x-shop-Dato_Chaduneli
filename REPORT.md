@@ -56,18 +56,18 @@ Live demo: https://10x-shop-dato-chaduneli.vercel.app · Repository: https://git
 
 | Metric          | Before | After | What changed |
 | --------------- | -----: | ----: | ------------ |
-| Performance     | 91     | 91    | The first row of catalog images loads eagerly with `fetchpriority="high"` instead of `loading="lazy"` (LCP). The score did not move in this run; most of the LCP time is the DummyJSON image CDN. |
+| Performance     | 91     | 91    | The first row of catalog images loads eagerly with `fetchpriority="high"` instead of `loading="lazy"` (LCP). The score did not change in this run. |
 | Accessibility   | 99     | 100   | Button and link names start with their visible text (WCAG 2.5.3), heading order h1 → h2 → h3 in the catalog. |
 | Best Practices  | 100    | 100   | — |
 | SEO             | 58     | 100   | "Before" was measured on the previous deployment's own URL, where Vercel sends `X-Robots-Tag: noindex`. On the production URL the code scored 92 because `/robots.txt` returned the app's HTML (DEBUG-LOG #5); fixed with `public/robots.txt`. |
 
-Screenshots: `docs/lighthouse/before.png` (deployment before the fixes), `docs/lighthouse/after.png` (production after steps `perf:` / `fix:` of 6 Nov).
+Screenshots: `docs/lighthouse/before.png` (the previous deployment, before the accessibility and SEO fixes), `docs/lighthouse/after.png` (production after the `perf:` / `fix:` commits of 6 Nov).
 
 ## Three hardest problems
 
-1. **The toolchain on Windows, day 1.** `npm` was blocked by the PowerShell execution policy, the VS Code terminal did not see Node.js after the install, and the Vite template installed TypeScript 7, which typescript-eslint does not support yet. Solved by `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, restarting VS Code and pinning `typescript ~6.0.3` (DEBUG-LOG #1–#3).
+1. **The toolchain on Windows, day 1.** `npm` was blocked by the PowerShell execution policy and the VS Code terminal did not see Node.js after the install — solved by `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` and restarting VS Code (DEBUG-LOG #2–#3). Claude also found that the Vite template installs TypeScript 7, which typescript-eslint does not support yet, so the setup step pins `typescript ~6.0.3` (#1).
 2. **Deploy and the SPA rewrite.** Vercel did not list the new repository until I gave its GitHub App access to it (#4). Later Lighthouse showed that the catch-all rewrite also answered `/robots.txt` with `index.html`; a real `public/robots.txt` fixed it, because Vercel serves real files before rewrites (#5).
-3. **Measuring performance honestly.** My first Lighthouse run gave Performance 49, but about 9 s of main-thread work came from browser extensions; the second run had DevTools throttling left on "3G" (+2 s on every request). In a clean guest profile the site scores 91. The clean reports also showed real issues — lazy-loaded LCP images, accessible names that did not start with the visible label, a skipped heading level — which I fixed on 6 Nov.
+3. **Measuring performance honestly.** My first Lighthouse run gave Performance 49, but about 9 s of main-thread work came from browser extensions. In the second run every request was about 2 s slower — most likely DevTools network throttling was left on "3G" (Performance 56). In a clean guest profile with no throttling the site scores 91. Even the first report showed real issues in the code — lazy-loaded LCP images, accessible names that did not start with the visible label, a skipped heading level, an invalid `robots.txt` — and they were fixed on 6 Nov (the fixes were written by Claude, I applied and checked them).
 
 ## What I would do differently
 
@@ -78,7 +78,9 @@ Screenshots: `docs/lighthouse/before.png` (deployment before the fixes), `docs/l
 
 ## AI usage
 
-- I used Claude (Anthropic) during the whole project. From the PRD it built a reference implementation and split it into about 50 small steps; I applied them one by one, read each diff, and ran `typecheck`, `lint` and `build` before every commit. Deploying to Vercel and testing the live site I did myself.
+- I used Claude (Anthropic) during the whole project. From the PRD it built a reference implementation and split it into small steps; I applied them one by one with a script that ran `typecheck`, `lint` and `build` before every commit. On 4 Nov I applied many steps in a row (26 commits in under an hour), so I did not study every change in depth then; before the defense I am going through the code module by module.
+- Claude also drafted the documents — README, PLAN, DEBUG-LOG, COMPATIBILITY, this report and the progress note — from my answers and the real data (commits, build output, Lighthouse reports), and took the Chrome screenshots in `docs/compat/`. I read them and corrected what was not true before committing.
+- I did myself: creating the project and the repository, connecting Vercel, the Lighthouse runs, the Firefox and Edge checks, the demo video, and the decisions below. More detail is in `ai-log.md`.
 - Claude also reviewed my Lighthouse reports and found the issues fixed in the `perf:` / `fix:` commits of 6 Nov. During the final check it ran the Chrome part of the compatibility pass through the Claude in Chrome extension and found the price-sorting bug (DEBUG-LOG #6); Firefox and Edge I checked myself.
-- Rejected: backdating commits, writing week-1/week-2 progress notes or opening Issues and PRs afterwards to make the history look like three weeks — the real dates are what they are. I also discarded my first two Lighthouse runs as a baseline (extensions, throttling).
-- Checking: every step had to pass TypeScript strict mode and ESLint with zero errors and build cleanly; the user flows were clicked through on the deployed site in Chrome, Firefox and Edge.
+- Rejected: backdating commits, writing week-1/week-2 progress notes or opening Issues and PRs afterwards to make the history look like three weeks — the real dates are what they are. I also discarded my first two Lighthouse runs as a baseline (extensions, throttling), and decided not to add a sign-up form or stricter validation, because the PRD does not ask for them and its rules and error texts must stay word for word.
+- Checking: every step had to pass TypeScript strict mode and ESLint with zero errors and build cleanly; the user flows were clicked through on the deployed site in Chrome (by Claude), Firefox and Edge (by me).
