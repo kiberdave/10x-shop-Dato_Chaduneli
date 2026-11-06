@@ -15,6 +15,7 @@ import type { AsyncState, SortOption } from "@/types/api";
 import type { Category, Product, ProductsResponse } from "@/types/product";
 import { PRODUCTS_PER_PAGE } from "@/utils/constants";
 import { pluralize } from "@/utils/format";
+import { sortByShownPrice } from "@/utils/sort";
 import { readCatalogParams } from "@/utils/url";
 
 type ParamChanges = Partial<Record<"q" | "category" | "sort" | "page", string | null>>;
@@ -102,6 +103,7 @@ export default function CatalogPage() {
 
       <CatalogResults
         state={state}
+        sort={params.sort}
         page={params.page}
         onRetry={reload}
         onAdd={handleAdd}
@@ -114,6 +116,7 @@ export default function CatalogPage() {
 
 interface CatalogResultsProps {
   state: AsyncState<ProductsResponse>;
+  sort: SortOption;
   page: number;
   onRetry: () => void;
   onAdd: (product: Product) => void;
@@ -122,7 +125,7 @@ interface CatalogResultsProps {
 }
 
 // Loading -> Error -> Empty -> Success, in this order (early returns)
-function CatalogResults({ state, page, onRetry, onAdd, onPageChange, onClearFilters }: CatalogResultsProps) {
+function CatalogResults({ state, sort, page, onRetry, onAdd, onPageChange, onClearFilters }: CatalogResultsProps) {
   if (state.status === "idle" || state.status === "loading") {
     return <ProductGridSkeleton />;
   }
@@ -150,7 +153,8 @@ function CatalogResults({ state, page, onRetry, onAdd, onPageChange, onClearFilt
   return (
     <>
       {/* The first row is above the fold: its images must not wait for lazy loading (LCP). */}
-      <ProductGrid products={products} onAdd={onAdd} priorityCount={4} />
+      {/* 12 items per page: sorting them on every render is cheaper than a useMemo would save */}
+      <ProductGrid products={sortByShownPrice(products, sort)} onAdd={onAdd} priorityCount={4} />
       <div className="flex flex-col items-center gap-3 pt-2">
         <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
         <p className="text-sm text-ink-500 dark:text-ink-400">
