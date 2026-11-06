@@ -19,9 +19,13 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
 function CartBadge({ count }: { count: number }) {
   if (count <= 0) return null; // 0 items -> no badge at all
   return (
-    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-tag px-1 text-xs font-bold text-tag-ink tabular-nums">
-      {count}
-    </span>
+    <>
+      <span className="grid h-5 min-w-5 place-items-center rounded-full bg-tag px-1 text-xs font-bold text-tag-ink tabular-nums">
+        {count}
+      </span>
+      {/* read as "Cart 3 items": the visible "Cart" and "3" stay part of the name */}
+      <span className="sr-only">{count === 1 ? " item" : " items"}</span>
+    </>
   );
 }
 
@@ -44,6 +48,7 @@ export function Header() {
     navigate("/");
   }
 
+  // Only for the icon-only cart link on mobile (it has no visible text of its own)
   const cartLabel = `Cart, ${totals.itemCount} ${totals.itemCount === 1 ? "item" : "items"}`;
 
   // The same links are rendered in the desktop bar and in the mobile panel
@@ -52,7 +57,7 @@ export function Header() {
       <NavLink to="/" end className={navLinkClass}>
         Catalog
       </NavLink>
-      <NavLink to="/cart" className={navLinkClass} aria-label={cartLabel}>
+      <NavLink to="/cart" className={navLinkClass}>
         Cart
         <CartBadge count={totals.itemCount} />
       </NavLink>
@@ -86,10 +91,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-200 bg-white/90 backdrop-blur dark:border-ink-800 dark:bg-ink-950/90">
       <div className="page-container flex h-16 items-center gap-2">
-        <Link to="/" className="focus-ring -ml-1 mr-2 flex items-center gap-1.5 rounded-lg p-1" aria-label="10X Shop — catalog">
+        {/* No aria-label: the visible "10X Shop" is the link's name (WCAG 2.5.3 "Label in Name") */}
+        <Link to="/" className="focus-ring -ml-1 mr-2 flex items-center gap-1.5 rounded-lg p-1">
           <span className="grid h-8 place-items-center rounded-md bg-brand-600 px-1.5 text-sm font-extrabold text-white [font-variation-settings:'wdth'_125]">
             10X
-          </span>
+          </span>{" "}
           <span className="text-lg font-extrabold tracking-tight [font-variation-settings:'wdth'_118]">Shop</span>
         </Link>
 

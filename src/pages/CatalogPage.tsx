@@ -97,6 +97,9 @@ export default function CatalogPage() {
         onSortChange={handleSortChange}
       />
 
+      {/* Cards use <h3>: this hidden <h2> keeps the heading order h1 → h2 → h3 for screen readers */}
+      <h2 className="sr-only">Products</h2>
+
       <CatalogResults
         state={state}
         page={params.page}

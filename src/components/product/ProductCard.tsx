@@ -72,7 +72,8 @@ export const ProductCard = memo(function ProductCard({ product, onAdd, priority 
           className="relative z-10 mt-auto w-full"
           disabled={isOutOfStock}
           onClick={() => onAdd(product)}
-          aria-label={isOutOfStock ? `${product.title} is out of stock` : `Add ${product.title} to cart`}
+          // The name starts with the visible text (WCAG 2.5.3 "Label in Name"), then says which product
+          aria-label={`${isOutOfStock ? "Out of stock" : "Add to cart"}: ${product.title}`}
         >
           {isOutOfStock ? "Out of stock" : "Add to cart"}
         </Button>
