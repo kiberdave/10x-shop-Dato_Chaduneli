@@ -85,7 +85,7 @@ export default function LoginPage() {
             id="username"
             name="username"
             label="Username"
-            placeholder="e.g. emilys"
+            placeholder="e.g. momxmarebeli"
             autoComplete="username"
             value={formik.values.username}
             onChange={formik.handleChange}
