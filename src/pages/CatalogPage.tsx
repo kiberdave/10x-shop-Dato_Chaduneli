@@ -146,7 +146,8 @@ function CatalogResults({ state, page, onRetry, onAdd, onPageChange, onClearFilt
 
   return (
     <>
-      <ProductGrid products={products} onAdd={onAdd} />
+      {/* The first row is above the fold: its images must not wait for lazy loading (LCP). */}
+      <ProductGrid products={products} onAdd={onAdd} priorityCount={4} />
       <div className="flex flex-col items-center gap-3 pt-2">
         <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
         <p className="text-sm text-ink-500 dark:text-ink-400">

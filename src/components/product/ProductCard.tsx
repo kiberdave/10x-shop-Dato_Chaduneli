@@ -9,6 +9,7 @@ import { formatCategory, formatRating } from "@/utils/format";
 interface ProductCardProps {
   product: Product;
   onAdd: (product: Product) => void; // callback prop: the parent decides what "add" means
+  priority?: boolean; // cards in the first visible row: load the image at once (LCP)
 }
 
 /**
@@ -20,7 +21,7 @@ interface ProductCardProps {
  * React.memo: when the cart changes, the catalog re-renders, but cards whose
  * props did not change (same product, same stable onAdd) are skipped.
  */
-export const ProductCard = memo(function ProductCard({ product, onAdd }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, onAdd, priority = false }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
 
   return (
@@ -31,7 +32,8 @@ export const ProductCard = memo(function ProductCard({ product, onAdd }: Product
           alt={product.title}
           width={300}
           height={300}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
           className="size-full object-contain p-2"
         />
