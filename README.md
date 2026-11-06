@@ -6,6 +6,8 @@ Login, checkout and orders are simulated locally: no real authentication, paymen
 
 **Live demo:** https://10x-shop-dato-chaduneli.vercel.app
 
+**Demo video (2:31):** https://youtu.be/BTUlHmJ4e9I
+
 ## Features
 
 ### CORE
