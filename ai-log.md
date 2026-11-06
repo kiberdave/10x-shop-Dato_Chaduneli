@@ -1,0 +1,12 @@
+# AI log
+
+How I used AI (Claude, Anthropic) in this project and which decisions were mine. The PRD allows AI fully; the product, the explanation of the code and the process are my responsibility.
+
+| Date | What Claude did | What I did / decided |
+| ---- | --------------- | -------------------- |
+| 1 Nov | Read the PRD and the course materials, built a reference implementation and split it into small steps with a script that applies a step and runs `typecheck`, `lint` and `build`. Explained how to fix `npm` in PowerShell and VS Code. Found that the Vite template installs TypeScript 7, which typescript-eslint does not support. | Created the Vite project and the GitHub repository myself, fixed the execution policy and PATH, applied the first steps, connected Vercel and gave its GitHub App access to the repository. Chose a short repository description. |
+| 4 Nov | Compared the work with the course grading report and made a full criteria list and a progress dashboard. Split the remaining work into small steps — one feature per commit. | Applied the CORE and catalog steps. |
+| 5 Nov | — | Theory test. Applied the steps for the product page, cart, checkout, orders, theme, profile and README. Decided to leave GitHub Issues / pull requests, the 15-day history and notes for weeks 1–2 as not done instead of faking them. |
+| 6 Nov | Analysed my Lighthouse reports (the first two were distorted by extensions and DevTools throttling) and wrote the fixes: eager LCP images, accessible names, heading order, `robots.txt`. Ran the Chrome part of the compatibility check through the Claude in Chrome extension and found the price-sorting bug, then fixed it. Drafted DEBUG-LOG #5–#6, COMPATIBILITY, REPORT and the progress note. Explained that an error on my phone came from a browser tab left open across deploys (an old page file no longer existed), not from the code. | Measured Lighthouse before / after, checked Firefox and Edge, recorded the demo video, read the report and asked to correct what was not exact. Decided: no sign-up form and no stricter validation (not in the PRD; its rules and error texts stay word for word), keep the cart link where it is and only add an icon, use "momxmarebeli" as the username example. |
+
+What I check myself before the defense: I go through the code module by module (`useFetch`, the cart reducer and `CartProvider`, `StorageService` with type guards, the Error Boundary, routing, the theme) so I can explain every part in my own words.

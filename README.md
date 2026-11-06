@@ -127,6 +127,7 @@ Without the rewrite, refreshing `/products/5` on the live site would return the 
 - [DEBUG-LOG.md](DEBUG-LOG.md) — bugs found and how they were fixed
 - [COMPATIBILITY.md](COMPATIBILITY.md) — browser and device checks
 - [docs/progress/week-3.md](docs/progress/week-3.md) — weekly progress note
+- [ai-log.md](ai-log.md) — how AI was used and which decisions were mine
 
 ## Credits
 
