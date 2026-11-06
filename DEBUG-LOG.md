@@ -52,3 +52,13 @@ Format for every entry: symptom → reproduction → tool → root cause → fix
 - **Root cause:** the rewrite sends every path that is not a real file to `index.html`. There was no real `robots.txt`, so crawlers got HTML instead of rules.
 - **Fix:** added `public/robots.txt` (`User-agent: *` / `Allow: /`). Vite copies it to `dist/`, and Vercel serves real files before applying rewrites — [b4d8eb5](https://github.com/kiberdave/10x-shop-Dato_Chaduneli/commit/b4d8eb5).
 - **Lesson:** a catch-all rewrite also catches the files that crawlers and browsers ask for by convention (`robots.txt`, `favicon.ico`); they must exist as real files.
+
+## 6. "Price: low to high" was not in price order
+
+- **Date:** 6 Nov 2026
+- **Symptom:** while checking the deployed site in Chrome before submission, Smartphones sorted "Price: low to high" showed $243.92 (Oppo A57) before $224.57 (Vivo S1).
+- **Reproduction:** open `/?category=smartphones&sort=price-asc` and read the yellow prices from left to right.
+- **Tool:** compared the shown prices with the `price` and `discountPercentage` fields of the API response (`/products/category/smartphones?…&sortBy=price&order=asc`).
+- **Root cause:** DummyJSON sorts `sortBy=price` by the list `price`. The card shows the price after `discountPercentage`, so two products with close list prices but different discounts swap places.
+- **Fix:** `sortByShownPrice()` in `src/utils/sort.ts` re-sorts each page by the discounted price (on a copy — `sort()` mutates); the catalog uses it for both price sorts — [b89e3e7](https://github.com/kiberdave/10x-shop-Dato_Chaduneli/commit/b89e3e7). Known limit: the API still splits pages by list price, so two items near a page border can land on neighbouring pages.
+- **Lesson:** when the UI shows a computed value, check what the server actually sorts or filters by.
